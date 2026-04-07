@@ -185,6 +185,23 @@ main {
   font-weight: 600;
 }
 
+.presenter-day-block {
+  margin-bottom: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 0.5px solid var(--separator-nonopaque);
+}
+
+.presenter-day-title {
+  margin: 0 0 0.65rem;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--label-primary);
+}
+
+.presenter-form-columns-hint {
+  margin-bottom: 1rem;
+}
+
 .page-toolbar {
   display: flex;
   align-items: center;

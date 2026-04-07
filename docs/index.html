@@ -60,9 +60,9 @@
 
         <div id="presenter-main" hidden>
         <p class="page-intro">
-          Upload your agenda (.xlsx), set the <strong>first session start</strong> and your
-          <strong>timezone</strong>. The file should list only <strong>topic</strong> and
-          <strong>duration (minutes)</strong> per row.
+          Upload <strong>three</strong> Excel files — one per day — set the <strong>first calendar day</strong>,
+          the <strong>start time of the first session</strong> on each day, and your <strong>timezone</strong>.
+          Each file lists only <strong>topic</strong> and <strong>duration (minutes)</strong> per row.
         </p>
         <div class="btn-row btn-row--start">
           <button type="button" class="btn btn-secondary" id="btn-presenter-reopen">
@@ -86,28 +86,68 @@
             <h2 id="modal-presenter-title">Presenter setup</h2>
             <form id="form-presenter">
               <div class="form-group">
-                <label for="presenter-file">Agenda file (.xlsx)</label>
-                <input
-                  id="presenter-file"
-                  name="file"
-                  type="file"
-                  accept=".xlsx,.xls"
-                  required
-                />
-                <p class="hint">Column A: topic · Column B: duration in minutes (optional header row).</p>
-              </div>
-              <div class="form-group">
-                <label for="presenter-date">First session – date</label>
+                <label for="presenter-date">First day (calendar date of day 1)</label>
                 <input id="presenter-date" type="date" required />
+                <p class="hint">Day 2 and day 3 are the following two calendar days in your timezone.</p>
               </div>
-              <div class="form-group">
-                <label for="presenter-time">First session – time</label>
-                <input id="presenter-time" type="time" value="09:00" required />
+              <div class="presenter-day-block">
+                <h3 class="presenter-day-title">Day 1</h3>
+                <div class="form-group">
+                  <label for="presenter-file-day1">Agenda file (.xlsx)</label>
+                  <input
+                    id="presenter-file-day1"
+                    name="file-day1"
+                    type="file"
+                    accept=".xlsx,.xls"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="presenter-time-day1">First session – time</label>
+                  <input id="presenter-time-day1" type="time" value="09:00" required />
+                </div>
               </div>
+              <div class="presenter-day-block">
+                <h3 class="presenter-day-title">Day 2</h3>
+                <div class="form-group">
+                  <label for="presenter-file-day2">Agenda file (.xlsx)</label>
+                  <input
+                    id="presenter-file-day2"
+                    name="file-day2"
+                    type="file"
+                    accept=".xlsx,.xls"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="presenter-time-day2">First session – time</label>
+                  <input id="presenter-time-day2" type="time" value="09:00" required />
+                </div>
+              </div>
+              <div class="presenter-day-block">
+                <h3 class="presenter-day-title">Day 3</h3>
+                <div class="form-group">
+                  <label for="presenter-file-day3">Agenda file (.xlsx)</label>
+                  <input
+                    id="presenter-file-day3"
+                    name="file-day3"
+                    type="file"
+                    accept=".xlsx,.xls"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="presenter-time-day3">First session – time</label>
+                  <input id="presenter-time-day3" type="time" value="09:00" required />
+                </div>
+              </div>
+              <p class="hint presenter-form-columns-hint">
+                Column A: topic · Column B: duration in minutes (optional header row on each file).
+              </p>
               <div class="form-group">
                 <label for="presenter-tz">Your timezone (IANA)</label>
                 <select id="presenter-tz" required></select>
-                <p class="hint">The built schedule may cover at most 3 calendar days in this timezone.</p>
+                <p class="hint">Three consecutive calendar days in this timezone.</p>
               </div>
               <p id="presenter-error" class="error-msg" role="alert"></p>
               <div class="modal-actions">

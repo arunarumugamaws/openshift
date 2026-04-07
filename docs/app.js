@@ -113,6 +113,23 @@ function buildSessions(items, year, month, day, hour, minute, presenterTz) {
   return sessions;
 }
 
+/** Next calendar day after `dateStr` (YYYY-MM-DD) in `presenterTz`. */
+function calendarDayPlus(dateStr, deltaDays, presenterTz) {
+  const t = luxon.DateTime.fromISO(dateStr, { zone: presenterTz })
+    .startOf("day")
+    .plus({ days: deltaDays });
+  if (!t.isValid) throw new Error("Invalid date.");
+  return { year: t.year, month: t.month, day: t.day };
+}
+
+function flatItemsFromState(state) {
+  if (!state) return [];
+  if (state.itemsByDay && Array.isArray(state.itemsByDay)) {
+    return state.itemsByDay.flat();
+  }
+  return state.items || [];
+}
+
 /** Curated IANA timezone identifiers (Region/City), sorted A–Z. */
 function getTimeZoneOptions() {
   return [
@@ -485,35 +502,58 @@ function wirePresenterOnce() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     errEl.textContent = "";
-    const fileInput = document.getElementById("presenter-file");
+    const f1 = document.getElementById("presenter-file-day1");
+    const f2 = document.getElementById("presenter-file-day2");
+    const f3 = document.getElementById("presenter-file-day3");
     const dateVal = dateInput.value;
-    const timeVal = document.getElementById("presenter-time").value;
+    const t1 = document.getElementById("presenter-time-day1").value;
+    const t2 = document.getElementById("presenter-time-day2").value;
+    const t3 = document.getElementById("presenter-time-day3").value;
     const tz = tzSelect.value;
 
-    if (!fileInput.files || !fileInput.files[0]) {
-      errEl.textContent = "Please choose an Excel file (.xlsx or .xls).";
+    if (!f1?.files?.[0] || !f2?.files?.[0] || !f3?.files?.[0]) {
+      errEl.textContent = "Please choose one Excel file (.xlsx or .xls) for each of the three days.";
       return;
     }
-    if (!dateVal || !timeVal) {
-      errEl.textContent = "Please set event start date and time.";
+    if (!dateVal || !t1 || !t2 || !t3) {
+      errEl.textContent = "Please set the first day’s date and the first session time for each day.";
       return;
     }
 
-    const [y, m, d] = dateVal.split("-").map(Number);
-    const [hh, mm] = timeVal.split(":").map(Number);
+    const [y1, m1, d1] = dateVal.split("-").map(Number);
+    const [hh1, mm1] = t1.split(":").map(Number);
+    const [hh2, mm2] = t2.split(":").map(Number);
+    const [hh3, mm3] = t3.split(":").map(Number);
 
     try {
-      const items = await parseExcelFile(fileInput.files[0]);
-      const sessions = buildSessions(items, y, m, d, hh, mm, tz);
+      const day2 = calendarDayPlus(dateVal, 1, tz);
+      const day3 = calendarDayPlus(dateVal, 2, tz);
+
+      const [items1, items2, items3] = await Promise.all([
+        parseExcelFile(f1.files[0]),
+        parseExcelFile(f2.files[0]),
+        parseExcelFile(f3.files[0]),
+      ]);
+
+      const s1 = buildSessions(items1, y1, m1, d1, hh1, mm1, tz);
+      const s2 = buildSessions(items2, day2.year, day2.month, day2.day, hh2, mm2, tz);
+      const s3 = buildSessions(items3, day3.year, day3.month, day3.day, hh3, mm3, tz);
+
+      const sessions = [...s1, ...s2, ...s3];
       assertAgendaWithinMaxDays(sessions, tz);
-      const presenterStartLabel = `${dateVal}T${timeVal}`;
+
+      const itemsFlat = [...items1, ...items2, ...items3];
+      const presenterStartLabel = `${dateVal}T${t1}`;
       saveState({
-        items,
+        itemsByDay: [items1, items2, items3],
+        items: itemsFlat,
         sessions,
         presenterTimeZone: tz,
         presenterStartLabel,
+        presenterDay2Time: t2.slice(0, 5),
+        presenterDay3Time: t3.slice(0, 5),
       });
-      renderPresenterPreview(items, sessions, tz);
+      renderPresenterPreview(itemsFlat, sessions, tz);
       hideModal("modal-presenter");
     } catch (err) {
       errEl.textContent = err.message || String(err);
@@ -540,8 +580,13 @@ function wirePresenterOnce() {
     if (st?.presenterStartLabel) {
       const [datePart, timePart] = st.presenterStartLabel.split("T");
       document.getElementById("presenter-date").value = datePart || "";
-      document.getElementById("presenter-time").value = (timePart || "09:00").slice(0, 5);
+      const t1 = document.getElementById("presenter-time-day1");
+      if (t1) t1.value = (timePart || "09:00").slice(0, 5);
     }
+    const t2d = document.getElementById("presenter-time-day2");
+    const t3d = document.getElementById("presenter-time-day3");
+    if (t2d) t2d.value = st?.presenterDay2Time || "09:00";
+    if (t3d) t3d.value = st?.presenterDay3Time || "09:00";
     if (st?.presenterTimeZone) {
       tzSelect.value = st.presenterTimeZone;
     }
@@ -556,7 +601,7 @@ function initPresenter() {
   const tzSelect = document.getElementById("presenter-tz");
 
   if (state && state.sessions && state.sessions.length) {
-    renderPresenterPreview(state.items, state.sessions, state.presenterTimeZone);
+    renderPresenterPreview(flatItemsFromState(state), state.sessions, state.presenterTimeZone);
     if (state.presenterTimeZone && tzSelect) {
       tzSelect.value = state.presenterTimeZone;
     }
