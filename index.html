@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f5f7" />
+    <title>OpenShift Architecture Workshop</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <a class="app-brand" href="#/attendee">
+        <img
+          class="app-brand-logo"
+          src="openshift-logo.svg"
+          width="40"
+          height="37"
+          alt="OpenShift"
+          decoding="async"
+        />
+        <h1 class="app-brand-title">OpenShift Architecture Workshop</h1>
+      </a>
+      <nav class="nav-links">
+        <a href="#/attendee">Attendee</a>
+        <a href="#/presenter">Presenter</a>
+      </nav>
+    </header>
+
+    <main>
+      <section data-page="presenter" hidden>
+        <div
+          class="modal-backdrop"
+          id="modal-presenter-auth"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-presenter-auth-title"
+          aria-hidden="true"
+        >
+          <div class="modal">
+            <h2 id="modal-presenter-auth-title">Presenter access</h2>
+            <form id="form-presenter-auth">
+              <div class="form-group">
+                <label for="presenter-password">Password</label>
+                <input
+                  id="presenter-password"
+                  name="password"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+                />
+              </div>
+              <p id="presenter-auth-error" class="error-msg" role="alert"></p>
+              <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">Unlock</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div id="presenter-main" hidden>
+        <p class="page-intro">
+          Upload your agenda (.xlsx), set the <strong>first session start</strong> and your
+          <strong>timezone</strong>. The file should list only <strong>topic</strong> and
+          <strong>duration (minutes)</strong> per row.
+        </p>
+        <div class="btn-row btn-row--start">
+          <button type="button" class="btn btn-secondary" id="btn-presenter-reopen">
+            Edit agenda / upload file
+          </button>
+          <button type="button" class="btn btn-ghost" id="btn-export-json" hidden>
+            Download agenda.json
+          </button>
+        </div>
+        <div id="presenter-preview"></div>
+
+        <div
+          class="modal-backdrop"
+          id="modal-presenter"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-presenter-title"
+          aria-hidden="true"
+        >
+          <div class="modal">
+            <h2 id="modal-presenter-title">Presenter setup</h2>
+            <form id="form-presenter">
+              <div class="form-group">
+                <label for="presenter-file">Agenda file (.xlsx)</label>
+                <input
+                  id="presenter-file"
+                  name="file"
+                  type="file"
+                  accept=".xlsx,.xls"
+                  required
+                />
+                <p class="hint">Column A: topic · Column B: duration in minutes (optional header row).</p>
+              </div>
+              <div class="form-group">
+                <label for="presenter-date">First session – date</label>
+                <input id="presenter-date" type="date" required />
+              </div>
+              <div class="form-group">
+                <label for="presenter-time">First session – time</label>
+                <input id="presenter-time" type="time" value="09:00" required />
+              </div>
+              <div class="form-group">
+                <label for="presenter-tz">Your timezone (IANA)</label>
+                <select id="presenter-tz" required></select>
+                <p class="hint">The built schedule may cover at most 3 calendar days in this timezone.</p>
+              </div>
+              <p id="presenter-error" class="error-msg" role="alert"></p>
+              <div class="modal-actions">
+                <button type="button" class="btn btn-ghost" id="btn-presenter-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save & build agenda</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <section data-page="attendee" hidden>
+        <div class="page-toolbar">
+          <p>Times shown in <strong>your</strong> timezone.</p>
+          <button type="button" class="btn btn-secondary" id="btn-attendee-change-tz">Change timezone</button>
+        </div>
+        <aside id="attendee-tz-map-root" class="tz-map-panel" hidden aria-live="polite"></aside>
+        <div id="attendee-agenda"></div>
+
+        <div
+          class="modal-backdrop"
+          id="modal-attendee"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-attendee-title"
+          aria-hidden="true"
+        >
+          <div class="modal">
+            <h2 id="modal-attendee-title">Your timezone</h2>
+            <form id="form-attendee">
+              <div class="form-group">
+                <label for="attendee-tz">Timezone (IANA)</label>
+                <select id="attendee-tz" required></select>
+              </div>
+              <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">Show agenda</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
